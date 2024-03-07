@@ -1,2 +1,2 @@
 # AOS
-# Pihuliak Anton variant 1
+# Pihuliak Anton variant 3

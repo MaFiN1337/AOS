@@ -32,6 +32,19 @@ public class projectOnJava {
                 keyWithAverage.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             }
             System.out.println(Arrays.toString(new Map[]{keyWithAverage}));
+            for (Map.Entry<String, List<Integer>> entry : keyWithAverage.entrySet()){
+                List<Integer> values = entry.getValue();
+                if (values.size() > 1){
+                    int sum = 0;
+                    for (Integer value : values) {
+                        sum += value;
+                    }
+                    int average = sum/values.size();
+                    values.clear();
+                    values.add(average);
+                }
+            }
+            System.out.println(Arrays.toString(new Map[]{keyWithAverage}));
         }
         catch (IOException e){
             e.printStackTrace();

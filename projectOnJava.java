@@ -31,7 +31,6 @@ public class projectOnJava {
                 }
                 keyWithAverage.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             }
-            System.out.println(Arrays.toString(new Map[]{keyWithAverage}));
             for (Map.Entry<String, List<Integer>> entry : keyWithAverage.entrySet()){
                 List<Integer> values = entry.getValue();
                 if (values.size() > 1){
@@ -44,10 +43,34 @@ public class projectOnJava {
                     values.add(average);
                 }
             }
-            System.out.println(Arrays.toString(new Map[]{keyWithAverage}));
+            List<String> keysList = bubbleSorter(keyWithAverage);
+            System.out.println(keysList);
         }
         catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private static List<String> bubbleSorter(Map<String, List<Integer>> linkedMap){
+        List<String> keysList = new ArrayList<>(linkedMap.keySet());
+        List<String> copyOfKeys = new ArrayList<>(keysList);
+        for (int i = 0; i < keysList.size()-1; i++) {
+            for (int j = keysList.size()-1; j > i; j--) {
+                String key1 = copyOfKeys.get(j);
+                String key2 = copyOfKeys.get(j-1);
+                List<Integer> valueForKey1 = linkedMap.get(key1);
+                List<Integer> valueForKey2 = linkedMap.get(key2);
+                Integer value1 = valueForKey1.get(0);
+                Integer value2 = valueForKey2.get(0);
+                if (value1 > value2){
+                    linkedMap.put(key1, valueForKey2);
+                    linkedMap.put(key2, valueForKey1);
+                    String temp = keysList.get(j);
+                    keysList.set(j, keysList.get(j-1));
+                    keysList.set(j - 1, temp);
+                }
+            }
+        }
+        return keysList;
     }
 }

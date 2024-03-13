@@ -11,7 +11,7 @@ public class projectOnJava {
             while (bufferedReader.readLine() != null) {
                 lineAmount++;
             }
-            Map<String, List<Integer>> keyWithAverage = new HashMap<>();
+            Map<String, List<Integer>> keyWithAverage = new LinkedHashMap<>();
             bufferedReader.reset();
             for (int i = 0; i < lineAmount; i++) {
                 int value;

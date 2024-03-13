@@ -1,8 +1,5 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Arrays;
+import java.io.*;
+import java.util.*;
 
 public class projectOnJava {
     public static void main(String[] args) {
@@ -14,8 +11,7 @@ public class projectOnJava {
             while (bufferedReader.readLine() != null) {
                 lineAmount++;
             }
-            String[] keys = new String[lineAmount];
-            int[] values = new int[lineAmount];
+            Map<String, List<Integer>> keyWithAverage = new HashMap<>();
             bufferedReader.reset();
             for (int i = 0; i < lineAmount; i++) {
                 int value;
@@ -33,11 +29,9 @@ public class projectOnJava {
                     }
                     key += nextLine.charAt(j);
                 }
-                keys[i] = key;
-                values[i] = value;
+                keyWithAverage.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             }
-            System.out.println(Arrays.toString(keys));
-            System.out.println(Arrays.toString(values));
+            System.out.println(Arrays.toString(new Map[]{keyWithAverage}));
         }
         catch (IOException e){
             e.printStackTrace();

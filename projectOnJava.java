@@ -44,7 +44,11 @@ public class projectOnJava {
                 }
             }
             List<String> keysList = bubbleSorter(keyWithAverage);
-            System.out.println(keysList);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            for (int i = 0; i < keysList.size(); i++) {
+                writer.write(keysList.get(i) + "\n");
+            }
+            writer.close();
         }
         catch (IOException e){
             e.printStackTrace();

@@ -2,13 +2,14 @@
 .stack 100h      
 
 .data
-    str1     DB  "3466"
-    lenStr1  equ ($-str1)
-    str2     db  "346", 0
-    lenStr2  equ ($-str2)
-    oneChar  db  ?
-    filename DB  "test.in", 0
-    varForAX DW ?
+    str1         DB  "3466"
+    lenStr1      equ ($-str1)
+    str2         db  "346", 0
+    lenStr2      equ ($-str2)
+    oneChar      db  ?
+    filename     DB  "test.in", 0
+    varForAX     DW  ?
+    binaryString db  16 dup(?)
 
 .code
 main proc
@@ -34,7 +35,8 @@ main proc
     ;            dec di
     ;            cmp di, 0
     ;            jne write_to_console
-                   call Converting
+                   call Converting                  ; result in BX
+                   call bxToBinary
                    mov  ah, 4Ch
                    int  21h
 
@@ -45,7 +47,7 @@ Converting PROC
                    mov  cx, lenStr1
                    dec  cx
                    xor  bx, bx
-                   xor dx, dx
+                   xor  dx, dx
     loop1:         
                    xor  ah, ah
                    mov  al, [si]
@@ -53,13 +55,13 @@ Converting PROC
                    je   endLoop
                    sub  al, 48
                    cbw
-                   mov varForAX, ax 
+                   mov  varForAX, ax
                    call Exponentiation
-                   mov ax, varForAX
+                   mov  ax, varForAX
                    mul  di
                    add  bx, ax
                    inc  si
-                   dec cx
+                   dec  cx
                    cmp  cx, 0
                    jge  loop1
     endLoop:       
@@ -68,14 +70,14 @@ Converting endp
 
 Exponentiation PROC
                    cmp  cx, 0
-                   je  end1
-                   xor ax, ax
-                   mov ax, 1
-                   mov di, 10
+                   je   end1
+                   xor  ax, ax
+                   mov  ax, 1
+                   mov  di, 10
                    mov  es, cx
     expLoop:       
-                    mul di
-                   dec cx
+                   mul  di
+                   dec  cx
                    cmp  cx, 0
                    jne  expLoop
                    jmp  end2
@@ -83,10 +85,31 @@ Exponentiation PROC
                    mov  di, 1
                    ret
     end2:          
-                   mov cx, es
-                   mov di, ax
+                   mov  cx, es
+                   mov  di, ax
                    ret
 Exponentiation endp
+
+bxToBinary PROC
+                   neg  bx
+                   mov  cx, 16
+                   lea  di, binaryString            
+
+    nextBitLoop:      
+                   shl  bx, 1                      
+                   jnc  zero_bit                    
+                   mov  byte ptr [di], '1'          
+                   jmp  next_bit
+    zeroBit:      
+                   mov  byte ptr [di], '0'          
+                   and  byte ptr [di], 11111110b    
+    nextBit:      
+                   inc  di                         
+                   loop nextBitLoop
+                   mov  ah, 9
+                   int  21h
+                   ret
+bxToBinary endp
 
 
 

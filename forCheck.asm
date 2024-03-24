@@ -2,28 +2,32 @@
 .stack 200h      
 
 .data
-    str1             DB  "3466", "$"
-    lenStr1          equ ($-str1)
-    str2             db  "3466", 0
-    lenStr2          equ ($-str2)
-    buffer           dw  ?
-    varForAX         DW  ?
-    binaryString     db  16 dup(?)
-    firstIsBigger    DB  "First is bigger", "$"
-    secondIsBigger   DB  "Second is bigger", "$"
-    equal            DB  "Strings are equal", "$"
-    fileHandle       DB  ?
-    dataBuffer       db  "Hello, World!", 0
-    arrCounters      DW  10000 DUP(1)
-    arrValues        DW  10000 DUP(?)
-    arrKeys        DW  10000 DUP(?)
-    isNegative       DB  0
-    readindKey       DB  1
-    value            DW  0
-    just10         Dw 10
-    forValueTracking DW  0
-    key              DW ""
-    keyCounter       DW 0
+    str1            DB          "3466", "$"
+    lenStr1         equ         ($-str1)
+    str2            db          "3466", 0
+    lenStr2         equ         ($-str2)
+    buffer          dw          ?
+    varForAX        DW          ?
+    tempo           DW          ?
+    binaryString    db          16 dup(?)
+    firstIsBigger   DB          "First is bigger", "$"
+    secondIsBigger  DB          "Second is bigger", "$"
+    equal           DB          "Strings are equal", "$"
+    isNegative      DB          0
+    readindKey      DB          1
+    value           DW          0
+    just10          Dw          10
+                    KeyValCount STRUC
+    keys            DB          16 DUP (?)
+    values          DW          ?
+    counters        DW          ?
+KeyValCount ENDS
+                    MY_ARRAY    KeyValCount 10 DUP ({})
+    keyValCountSize dw          20
+                    KeyAverage  STRUC
+    keys2           DW          ?
+    average         DW          ?
+KeyAverage ENDS
 
 .code
 main proc
@@ -31,51 +35,65 @@ main proc
                    mov  ds, ax
                    mov  di, offset buffer
                    dec  di
-                   mov  si, offset value
-                   mov  forValueTracking, si
+                   mov si, offset KeyValCount
     read_next:     
                    mov  ah, 3Fh
                    inc  di
-                   mov dx, di
+                   mov  dx, di
                    mov  bx, 0h
                    mov  cx, 1
                    int  21h
                    cmp  ax, 0
-                   je   ennnnd
-                   cmp  readindKey, 0
-                   je   readingValue
-                   mov  cx, [di]
-                   cmp  cx, 20h
-                   je   endOfKey
-                   jmp  jumpOnLoop
-    endOfKey:      
-                   mov ax, buffer 
-                   mov  key, ax
-                   mov  readindKey, 0
-                   mov ax, keyCounter
-                   mov dx, 2
-                   mul dx
-                   mov di, arrKeys
-                   mov bx, key
-                   add di, ax
-                   mov[di], bx
-                   jmp  jumpOnLoop
-    ennnnd:        cmp  isNegative, 1
-                   jne  veryEnd
-    veryEnd:       
-                   mov  ah, 4Ch
-                   int  21h
-    readingValue:  
+                   je   markForJumps
                    mov  cx, [di]
                    cmp  cx, 0Ah
                    je   endOfLine
                    cmp  cx, 0Dh
                    je   endOfLine
-                   inc forValueTracking
+                   cmp  readindKey, 0
+                   je   readingValue
+                   mov  cx, [di]
+                   cmp  ch, 20h
+                   je   endOfKey
+                   cmp  cl, 20h
+                   je   endOfKey
+                   jmp  jumpOnLoop
+    endOfKey:      
+                   mov  readindKey, 0
+                   mov  bx, di
+                   mov  di, offset buffer
+                   mov  cx, 0
+    copy_key:      
+                   mov  al, [di]
+                   MOV  [SI], al
+                   inc  si
+                   inc di
+                   inc  cx
+                   cmp  cx, 16
+                   jne  copy_key
+                   mov  di, bx
+                   add si, 4
+                   add  si, keyValCountSize
+                   jmp  jumpOnLoop
+    markForJumps:  
+                   jmp  ennnnd
+    endOfLine:     
+                   mov  readindKey, 1
+                   cmp  isNegative, 1
+                   jne  notNeg
+                   neg  value
+    notNeg:        
+                   mov  isNegative, 0
+                   mov  value, 0
+                   mov  buffer, 0
+                   mov  di, offset buffer
+                   dec  di
+                   jmp  jumpOnLoop
+    readingValue:  
                    cmp  cx, 2Dh
                    je   valIsNeg
                    mov  buffer, 0
-                   sub cx, 48
+                   sub  cx, 48
                    mov  ax, value
                    mul  just10
                    mov  value, ax
@@ -83,23 +101,31 @@ main proc
                    mov  di, offset buffer
                    dec  di
                    jmp  jumpOnLoop
+    ennnnd:        cmp  isNegative, 1
+                   jne  veryEnd
+    veryEnd:       
+                   mov  si, offset KeyValCount
+                   mov  cx, 0
+    loopForKeys:   
+                   mov  bx, 0
+    arrayKeysLoop: 
+                   mov  ah, 02h
+                   mov  dl, [si]
+                   int  21h
+                   inc si
+                   inc  bx
+                   cmp  bx, 20
+                   jne  arrayKeysLoop
+                   add  si, keyValCountSize
+                   inc  cx
+                   cmp  cx, 10
+                   jne  loopForKeys
+                   mov  ah, 4Ch
+                   int  21h
 
     valIsNeg:      
                    mov  isNegative, 1
-                   jmp  jumpOnLoop
-    endOfLine:     
-                   mov  readindKey, 1
-                   cmp  isNegative, 1
-                   jne  notNeg
-                   neg  value
-    notNeg:
-                   mov  isNegative, 0
-                   mov  value, 0
-                   mov  buffer, 0
-                   mov  di, offset buffer
-                   dec  di
     jumpOnLoop:    
-    
                    jmp  read_next
 
 main endp

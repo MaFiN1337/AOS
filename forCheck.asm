@@ -1,48 +1,106 @@
-.model small    
-.stack 100h      
+.model large 
+.stack 200h      
 
 .data
-    str1           DB  "3466", 0
-    lenStr1        equ ($-str1)
-    str2           db  "3466", 0
-    lenStr2        equ ($-str2)
-    oneChar        db  ?
-    filename       DB  "test.in", 0
-    varForAX       DW  ?
-    binaryString   db  16 dup(?)
-    firstIsBigger  DB  "First is bigger", "$"
-    secondIsBigger DB  "Second is bigger", "$"
-    equal          DB  "Strings are equal", "$"
+    str1             DB  "3466", "$"
+    lenStr1          equ ($-str1)
+    str2             db  "3466", 0
+    lenStr2          equ ($-str2)
+    buffer           dw  ?
+    varForAX         DW  ?
+    binaryString     db  16 dup(?)
+    firstIsBigger    DB  "First is bigger", "$"
+    secondIsBigger   DB  "Second is bigger", "$"
+    equal            DB  "Strings are equal", "$"
+    fileHandle       DB  ?
+    dataBuffer       db  "Hello, World!", 0
+    arrCounters      DW  10000 DUP(1)
+    arrValues        DW  10000 DUP(?)
+    arrKeys        DW  10000 DUP(?)
+    isNegative       DB  0
+    readindKey       DB  1
+    value            DW  0
+    just10         Dw 10
+    forValueTracking DW  0
+    key              DW ""
+    keyCounter       DW 0
 
 .code
 main proc
                    mov  ax, @data
                    mov  ds, ax
-    ;mov  di, 0
-    ;read_next:
-    ; inc  di
-    ; mov  ah, 3Fh
-    ; mov  bx, 0h                                   ; stdin handle
-    ; mov  cx, 2                                    ; 1 byte to read
-    ;mov  dx, offset oneChar                       ; read to ds:dx
-    ; int  21h                                      ;  ax = number of bytes read
-    ;or   ax,ax
-    ;jnz  read_next
-    ;lea  si, oneChar
-            
-    ; write_to_console:
-    ;            mov ah, 02h
-    ;            mov dl, [si]
-    ;            int 21h
-    ;            inc si
-    ;            dec di
-    ;            cmp di, 0
-    ;            jne write_to_console
-    ;call Converting                  ; result in BX
-    ;call bxToBinary
-                   call Comparing
+                   mov  di, offset buffer
+                   dec  di
+                   mov  si, offset value
+                   mov  forValueTracking, si
+    read_next:     
+                   mov  ah, 3Fh
+                   inc  di
+                   mov dx, di
+                   mov  bx, 0h
+                   mov  cx, 1
+                   int  21h
+                   cmp  ax, 0
+                   je   ennnnd
+                   cmp  readindKey, 0
+                   je   readingValue
+                   mov  cx, [di]
+                   cmp  cx, 20h
+                   je   endOfKey
+                   jmp  jumpOnLoop
+    endOfKey:      
+                   mov ax, buffer 
+                   mov  key, ax
+                   mov  readindKey, 0
+                   mov ax, keyCounter
+                   mov dx, 2
+                   mul dx
+                   mov di, arrKeys
+                   mov bx, key
+                   add di, ax
+                   mov[di], bx
+                   jmp  jumpOnLoop
+    ennnnd:        cmp  isNegative, 1
+                   jne  veryEnd
+    veryEnd:       
                    mov  ah, 4Ch
                    int  21h
+    readingValue:  
+                   mov  cx, [di]
+                   cmp  cx, 0Ah
+                   je   endOfLine
+                   cmp  cx, 0Dh
+                   je   endOfLine
+                   inc forValueTracking
+                   cmp  cx, 2Dh
+                   je   valIsNeg
+                   mov  buffer, 0
+                   sub cx, 48
+                   mov  ax, value
+                   mul  just10
+                   mov  value, ax
+                   add  value, cx
+                   mov  di, offset buffer
+                   dec  di
+                   jmp  jumpOnLoop
+
+    valIsNeg:      
+                   mov  isNegative, 1
+                   jmp  jumpOnLoop
+    endOfLine:     
+                   mov  readindKey, 1
+                   cmp  isNegative, 1
+                   jne  notNeg
+                   neg  value
+    notNeg:
+                   mov  isNegative, 0
+                   mov  value, 0
+                   mov  buffer, 0
+                   mov  di, offset buffer
+                   dec  di
+    jumpOnLoop:    
+    
+                   jmp  read_next
 
 main endp
 
@@ -60,7 +118,7 @@ Converting PROC
                    sub  al, 48
                    cbw
                    mov  varForAX, ax
-                   call Exponentiation
+    ;call Exponentiation
                    mov  ax, varForAX
                    mul  di
                    add  bx, ax
@@ -137,7 +195,7 @@ Comparing PROC
                    jne  lensDiffer
                    dec  cx
                    jnz  compareLoop
-                   mov  dx, offset equal
+    ;mov  dx, offset equal
                    mov  ah, 9
                    int  21h
                    ret
@@ -146,13 +204,13 @@ Comparing PROC
                    jg   FirstBigger
                    jmp  SecondBigger
 
-    FirstBigger: 
-                   mov  dx, offset firstIsBigger
+    FirstBigger:   
+    ;mov  dx, offset firstIsBigger
                    mov  ah, 9
                    int  21h
                    ret
-    SecondBigger:
-                   mov  dx, offset secondIsBigger
+    SecondBigger:  
+    ; mov  dx, offset secondIsBigger
                    mov  ah, 9
                    int  21h
                    ret

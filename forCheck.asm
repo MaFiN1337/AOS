@@ -1,5 +1,5 @@
-.model large 
-.stack 300h      
+.model huge
+.stack 100h      
 
 .data
     isNegative         DB          0
@@ -20,7 +20,7 @@
     values             DW          ?
     counters           DW          ?
 KeyValCount ENDS
-                       MY_ARRAY    KeyValCount 100 DUP ({})
+                       MY_ARRAY    KeyValCount 3000 DUP ({})
     buffer             dw          ?
 
 .code
@@ -328,11 +328,11 @@ main proc
                      xor   dx, dx
                      mov   ax, numOfKeyRead
                      xor   ax, ax
+                     mov   ah, 02
     loopForKeys:     
                      mov   bx, 0
     arrayKeysLoop:   
-                     xor dh, dh
-                     mov   ah, 02h
+                     xor   dh, dh
                      mov   dl, [si]
                      cmp   dl, 0
                      je    keyHasEnded
@@ -343,16 +343,20 @@ main proc
                      cmp   bx, 16
                      jne   arrayKeysLoop
     keyHasEnded:     
+                     cmp   bx, 0
+                     je    writeEnd
+                     mov   ah, 2
                      add   si, counter
                      add   si, 4
                      mov   counter, 16
                      inc   cx
-                     mov dl, 0Dh
-                     int 21h
-                     mov   dl, 0Ah
+                     mov   dl, 13
                      int   21h
-                     cmp   cx, 100
+                     mov   dl, 10
+                     int   21h
+                     cmp   cx, 3000
                      jne   loopForKeys
+    writeEnd:        
                      mov   ah, 4Ch
                      int   21h
     jumpOnLoop:      

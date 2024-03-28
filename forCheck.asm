@@ -20,7 +20,7 @@
     values             DW          ?
     counters           DW          ?
 KeyValCount ENDS
-                       MY_ARRAY    KeyValCount 10 DUP ({})
+                       MY_ARRAY    KeyValCount 100 DUP ({})
     buffer             dw          ?
 
 .code
@@ -212,7 +212,7 @@ main proc
                      jmp   copy_key
     sameKeys:        
                      mov   ax, 0
-                     mov   di, 0510h
+                     mov   di, offset buffer
                      mov   cx, 50
     movLoop2:        
                      stosb
@@ -263,7 +263,7 @@ main proc
                      mov   [si], ax
                      mov   value, 0
                      mov   ax, 0
-                     mov   di, 0510h
+                     mov   di, offset buffer
                      mov   cx, 50
     movLoop:         
                      stosb
@@ -306,7 +306,7 @@ main proc
                      mov   keyNotUnique, 0
                      mov   value, 0
                      mov   ax, 0
-                     mov   di, 0510h
+                     mov   di, offset buffer
                      mov   cx, 32
     movLoop1:        
                      stosb
@@ -331,6 +331,7 @@ main proc
     loopForKeys:     
                      mov   bx, 0
     arrayKeysLoop:   
+                     xor dh, dh
                      mov   ah, 02h
                      mov   dl, [si]
                      cmp   dl, 0
@@ -346,9 +347,11 @@ main proc
                      add   si, 4
                      mov   counter, 16
                      inc   cx
-                     mov   dl, 0Dh
+                     mov dl, 0Dh
+                     int 21h
+                     mov   dl, 0Ah
                      int   21h
-                     cmp   cx, 10
+                     cmp   cx, 100
                      jne   loopForKeys
                      mov   ah, 4Ch
                      int   21h
